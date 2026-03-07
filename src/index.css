@@ -1,0 +1,143 @@
+#root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 700px;
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+}
+h1 {
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+h2{
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+  
+}
+h3{
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+img {
+  display: block;
+  aspect-ratio: auto;
+  max-height: 15vh;
+  width: auto;
+  height: auto;
+  margin: 1rem;
+}
+.modal-underlay {
+  position: absolute;
+  inset: 0;
+  background: grey;
+  opacity: 0.8;
+  z-index: 99;
+  border: none;
+  width: 100%;
+  box-shadow: unset;
+}
+
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+.modal-content {
+  position: relative;
+  z-index: 101;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 400px;
+  border: 1px solid black;
+  background: white;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  /* align-items: center;
+  justify-content: center; */
+  gap: 1rem;
+}
+hr {
+  background-color:grey;
+  height: 1px;
+  display: block;
+  width: 96%;
+ }
+p,
+text,
+li{
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
+th {
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+  border-bottom: 1px solid black;
+  background-color: #a2e3ec;
+}
+option:hover {
+  background-color: #a2e3ec;
+}
+table{
+  margin: 3%;
+}
+
+.display-attendance {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.select-timeframe,
+.select-group{
+  margin: 5px;
+}
+.select-group{
+  float: right;
+}
