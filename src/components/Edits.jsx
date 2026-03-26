@@ -11,7 +11,9 @@ export default function Edits(){
                 <AddStudent handleCloseModal={()=>{setShowModal(false)}}/>
             </Modal2>)}
             <hr></hr>
-            <button onClick={()=>{setShowModal(true)}}><h3>Add New Student</h3></button>
+            <div class="manage-students">
+                <button class="manage-students-button" onClick={()=>{setShowModal(true)}}><h3>Manage Students</h3></button>
+            </div>
         </>
     )
 }

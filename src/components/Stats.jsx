@@ -1,5 +1,4 @@
 
-
 import { collection, getDocs, query, where } from "firebase/firestore"
 import { useEffect, useMemo, useState } from "react"
 import { db } from "../../firebase";
@@ -122,7 +121,7 @@ export default function Stats() {
                     </table>
                 )
             })}
-
+            
         </>
     )
 }
