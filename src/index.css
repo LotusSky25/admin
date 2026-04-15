@@ -9,6 +9,11 @@
   margin: 0 auto;
   min-height: 95vh;
 }
+input[type=“text”],
+input[type=“submit”],
+.input-checkbox {
+-webkit-appearance: none;
+}
 
 header {
   display: flex;
@@ -41,6 +46,14 @@ h3{
   font-variation-settings:
     "wdth" 100;
 }
+h5 {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 1.5vh;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
+}
 hr {
   background-color:grey;
   height: 1px;
@@ -68,7 +81,7 @@ main {
 img {
   display: block;
   aspect-ratio: auto;
-  max-height: 15vh;
+  max-height: 20vh;
   width: auto;
   height: auto;
   margin: 1rem;
@@ -112,12 +125,35 @@ img {
   border-radius: 3%;
   gap: 1rem;
 }
+
+.addAdmin-content {
+  margin: 0;
+  padding: 0;
+
+}
 hr {
   background-color:grey;
   height: 1px;
   display: block;
   width: 96%;
- }
+}
+
+input {
+  border-radius: 6px;
+  padding: 1%;
+  size: 1vh;
+}
+
+.admin-input {
+  margin: 2%;
+  display: flex;
+  gap: 1rem;
+}
+
+.admin-input p{
+  margin: 0;
+}
+
 .graph {
   width: 50%;
   display: flex;
@@ -125,6 +161,18 @@ hr {
   justify-content: center;
   align-items: center;
 }
+
+.warning{
+  background-color: #ffe6b4;
+  border-radius: 10px;
+  padding: 2%;
+}
+.error {
+  background-color: #ffb4b4;
+  border-radius: 10px;
+  padding: 2%;
+}
+
 .roll, 
 .group-select,
 .choose-action {
@@ -133,6 +181,21 @@ hr {
   justify-content: center;
   align-items:center;
 
+}
+.is-submitted {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items:center;
+  padding: 5%;
+}
+
+.is-submitted button:nth-of-type(1) {
+  margin: 2%;
+}
+.is-submitted button:nth-of-type(2) {
+  margin: 2%;
+  padding: 2%;
 }
 
 .group-button-Kowhai {
@@ -144,6 +207,10 @@ hr {
   border-color: #FFD60A;
   cursor: pointer;
 }
+.group-button-Kowhai:hover {
+  background-color: #ecc400e4;
+}
+
 .group-button-Magnolias {
   background-color: #FC62B9;
   margin: 2px;
@@ -153,6 +220,10 @@ hr {
   border-color: #FC62B9;
   cursor: pointer;
 }
+.group-button-Magnolias:hover {
+  background-color: #de4c9f;
+}
+
 .group-button-Oaks {
   background-color: #34C759;
   margin: 2px;
@@ -162,6 +233,10 @@ hr {
   border-color: #34C759;
   cursor: pointer;
 }
+.group-button-Oaks:hover {
+  background-color: #2aa549;
+}
+
 .roll-button-Kowhai,
 .roll-button-Magnolias,
 .roll-button-Oaks,
@@ -171,17 +246,19 @@ hr {
   max-width: 400px;
   border-radius: 10px;
   border-color: lightgrey;
-
 }
+
 .roll-button-Kowhai:hover,
 .roll-button-Magnolias:hover,
-.roll-button-Oaks:hover {
+.roll-button-Oaks:hover,
+.edit-button:hover {
   box-shadow: 5px;
   background-color: lightgray;
   border-radius: 10px;
   border-color: lightgray;
   cursor: pointer;
 }
+
 .roll-button-selected-Kowhai {
   margin: 2px;
   width: 100%;
@@ -191,6 +268,7 @@ hr {
   border-color: #FFD60A;
   border-radius: 10px;
 }
+
 .roll-button-selected-Magnolias {
   margin: 2px;
   width: 100%;
@@ -200,6 +278,7 @@ hr {
   border-color: #FC62B9;
   border-radius: 10px;
 }
+
 .roll-button-selected-Oaks {
   margin: 2px;
   width: 100%;
@@ -209,46 +288,70 @@ hr {
   border-color: #34C759;
   border-radius: 10px;
 }
-.delete-student-button {
+
+.delete-student-button{
   margin: 2px;
   width: 100%;
   max-width: 200px;
   background-color: #ffffff;
-  color:#ff0000;
+  color:#700707;
+  background-color: #fc6262;
   border-radius: 10px;
 }
+.delete-student-button:hover {
+  background-color: #f83b3b;
+  cursor: pointer;
+}
+
 .submit-roll-button,
 .login-button, 
 .manage-students-button,
 .add-student-button,
-.logout-button {
+.logout-button,
+.addAdmin-button {
   margin: 2px;
   width: 100%;
   max-width: 200px;
   background-color: #15aee8;
   border-radius: 10px;
+  border-color: #15aee8;
 }
+
+.addAdmin-button {
+  padding: 1%;
+  size: 1vh;
+  width: 100%;
+  max-width: 100px;
+}
+
 .add-student-button{
   padding: 0;
   margin-top: 6%;
 }
+
 .logout-button-text {
   padding: none;
   margin:none;
 }
+
 .submit-roll-button:hover,
 .login-button:hover,
-.manage-students-button:hover {
+.manage-students-button:hover,
+.addAdmin-button:hover,
+.logout-button:hover,
+.add-student-button:hover {
   box-shadow: 5px;
   background-color: #1499ca;
   border-radius: 10px;
   cursor: pointer;
 }
+
 .roll-header {
   display: flex;
   align-items: center;
   justify-content:flex-end;
 }
+
 .back-button-roll,
 .edit-return-button {
   background-color: white;
@@ -257,6 +360,7 @@ hr {
   border-style: none;
   font-size: medium;
 }
+
 .back-button-roll:hover,
 .edit-return-button:hover {
   background-color: white;
@@ -265,6 +369,7 @@ hr {
   cursor: pointer;
   font-size: medium;
 }
+
 th {
   font-family: "Noto Sans", sans-serif;
   font-optical-sizing: auto;
@@ -275,9 +380,11 @@ th {
   border-bottom: 1px solid black;
   background-color: #a2e3ec;
 }
+
 option:hover {
   background-color: #a2e3ec;
 }
+
 table{
   margin: 3%;
 }
@@ -287,28 +394,42 @@ table{
   align-items: center;
   justify-content: space-evenly;
 }
+
 .manage-students-header {
   display: flex;
   align-items: center;
   flex-direction:row;
   justify-content: center;
 }
+
+.header-actions {
+  display: flex;
+  align-items: right;
+  flex-direction:row;
+  justify-content:left;
+}
+
 .select-timeframe,
 .select-group{
   margin: 5px;
 }
+
 .select-group{
   float: right;
 }
+
 .student-data{
   margin-left:10%;
 }
+
 .manage-students {
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .display-add-student {
   display:flex;
   flex-direction:column;
 }
+

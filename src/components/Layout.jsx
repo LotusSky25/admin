@@ -2,6 +2,8 @@ import Modal1 from "./Modal1"
 import Auth from "./Auth"
 import download from "../assets/download.png"
 import {useAuth}from '../context/AuthContext'
+import Church from "./Church"
+import { useState } from "react"
 
 export default function Layout(props) {
     const { children } = props
@@ -11,7 +13,10 @@ export default function Layout(props) {
             <div>
                 <h1>GPC Kids</h1>
                 <p>The attendance tracker for Glendowie Presbyterian Church </p>
-                {globalUser ? (<button class="logout-button" onClick={logout}>Logout</button>):''}
+                    {globalUser ? (<button class="logout-button" onClick={logout}>Logout</button>):''}
+                <div class="header-actions">   
+                    {globalUser &&(<Church></Church>)}
+                </div>
             </div>
             <img src={download}/>
         </header>

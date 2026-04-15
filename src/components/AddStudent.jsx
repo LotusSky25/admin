@@ -1,7 +1,8 @@
 import { useState, useEffect} from "react"
 import {db } from "../../firebase"
-import { addDoc, doc, setDoc, increment, getDocs, collection, deleteDoc} from "firebase/firestore"
+import { doc, setDoc, increment, getDocs, collection} from "firebase/firestore"
 import {httpsCallable, getFunctions} from 'firebase/functions'
+import { useAuth } from "../context/AuthContext"
 
 //just what's visible when you click "add student"
 export default function AddStudent(props) {
@@ -24,10 +25,12 @@ export default function AddStudent(props) {
     const [hasDecided, setHasDecided] = useState(false)
     const [isDeleted, setIsDeleted] = useState(false)
     const [listStudents, setListStudents] = useState(false)
+    const [error, setError] = useState("")
 
     const group = calculateGroup()
     const functions = getFunctions()
     const deleteStudent = httpsCallable(functions, 'deleteStudent')
+    const { globalData } = useAuth()
     
     //function to fetch data
     async function fetchData(col) {
@@ -67,28 +70,49 @@ export default function AddStudent(props) {
             return "Oaks"
         }
     }
+    function checkStudent(name) {
+        const normalizedName = name.trim().toLowerCase()
+        return !studentData.some((student) => {
+            return (student.name || "").trim().toLowerCase() === normalizedName
+        })
+    }
     //function to add student document to database 
     async function addStudent() {
-        try {    
-            const docRef = doc(db, "students", name)
-            const res = await setDoc(docRef, {
-                name: name,
-                group: group,
-                grade: year,
-                Dob: Dob
-            }, {merge: true})
-            console.log(name)
-            //reset states
-            setIsSubmitted(true)
-            setName("")
-            setYear(0)
-            const docRef2 = doc(db, "groups", group)
-            const res2 = await setDoc(docRef2, {
-                student_count: increment(1)
-            }, {merge: true})
-            console.log(name)
-        } catch(err) {
-            console.log(err)
+        setError("")
+        //check is student is within program age range, return if too old
+        if (year > 6 || year < 0) {
+            setError("Student is too young/old for the program!")
+            return
+        }
+        const unique = checkStudent(name)
+        if (unique) {
+            try {    
+                const docRef = doc(db, "students", name)
+                await setDoc(docRef, {
+                    name: name,
+                    group: group,
+                    grade: year,
+                    Dob: Dob,
+                    code: globalData?.code || ""
+                }, {merge: true})
+                console.log(name)
+                //reset states
+                setIsSubmitted(true)
+                setName("")
+                setYear(0)
+                const docRef2 = doc(db, "groups", group)
+                await setDoc(docRef2, {
+                    student_count: increment(1),
+                    code: globalData?.code || ""
+                }, {merge: true})
+                console.log(name)
+            } catch(err) {
+                console.log(err)
+                setError("Unable to add student right now.")
+            }
+        }
+        else {
+            setError("Student already exists. Please ensure the new student's name is unique.")
         }
     }
     //function to delete student document and all associated subcollections and documents 
@@ -124,6 +148,7 @@ export default function AddStudent(props) {
                         <button class="edit-return-button" onClick={()=>{setHasDecided(false), setIsAddStudent(false)}}><i class="fa-solid fa-arrow-left"></i></button>
                         <h2>Add New Student</h2>
                     </div>
+                    {error && (<div class="error"><p>❌ {error}</p></div>)}
                     <div class="display-add-student">
                         <p>Student Name</p>
                         <input value={name} onChange={(e)=>{setName(e.target.value)}} placeholder="Name"></input>
@@ -138,9 +163,11 @@ export default function AddStudent(props) {
 
                     {isSubmitted && ( //response if has been submitted: offer different options to escape modal
                         <>
-                            <p>New student added successfully!</p>
-                            <button class="edit-return-button" onClick={()=>{handleCloseModal()}}><i class="fa-solid fa-arrow-left"></i>Return</button>
-                            <button onClick={()=>{setIsSubmitted(false)}}>Add another student</button>
+                            <div class="is-submitted">
+                                <p>✅ New student added successfully!</p>
+                                <button class="edit-return-button" onClick={()=>{handleCloseModal()}}><i class="fa-solid fa-arrow-left"></i>Return</button>
+                                <button class="edit-button" onClick={()=>{setIsSubmitted(false)}}>Add another student</button>
+                            </div>
                         </>
                     )}
                 </>
@@ -201,12 +228,12 @@ export default function AddStudent(props) {
                         )}
                         {isDeleted&&(
                             <>
-                                <div class="isDeleted">
+                                <div class="is-submitted">
                                     <button class="edit-return-button" onClick={()=>{
                                         setHasDecided(false), 
                                         setIsEdit(false), 
                                         setIsDeleted(false)}}><i class="fa-solid fa-arrow-left"></i>Return</button>
-                                    <p>Student deleted successfully</p>
+                                    <p>✅ Student deleted successfully</p>
                                 </div>
                             </>
                         )}

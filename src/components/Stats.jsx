@@ -7,16 +7,18 @@ export default function Stats() {
     const [sessionData, setSessionData] = useState([])
     const [targetGroup, setTargetGroup] = useState("")
     const [targetRange, setTargetRange] = useState("")
+    const [error, setError ] =useState("")
+    const [isLoading, setIsLoading] = useState(false)
     const [groups, setGroups] = useState([])
+    const [referenceNow] = useState(() => Date.now())
     const times = useMemo(()=>{
-        const now = Date.now()
         return [
-            {label:"Last Week", time: now-604800000},
-            {label:"Last Month", time: now-2.628e+9},
-            {label:"Last Year", time: now-3.154e+10},
+            {label:"Last Week", time: referenceNow-604800000},
+            {label:"Last Month", time: referenceNow-2.628e+9},
+            {label:"Last Year", time: referenceNow-3.154e+10},
             {label: "All Time", time: 0}
         ]
-    }, [])
+    }, [referenceNow])
     
     async function fetchData(col) {
             try {
@@ -30,29 +32,11 @@ export default function Stats() {
                 return data //this is an array of objects
             } catch (err) {
                 console.log(err)
-            }
-        }
-    async function fetchSessionData() {
-            try {
-                console.log(targetRange)
-                const docRef = collection(db, "sessions")
-                const q = query(
-                    docRef,
-                    where("timestamp", ">=",targetRange)
-                )
-                //create empty array for data
-                const data = []
-                //push each query docs from the last 7 days
-                const querySnapshot = await getDocs(q)
-                //push session data into data array
-                querySnapshot.forEach((doc)=>{
-                    data.push({id: doc.id, ...doc.data()})
-                })
-
-                console.log("Query returned:", data)
-                return data
-            } catch (err) {
-                console.log("Error fetching data:", err)
+                if (err?.code === "permission-denied") {
+                    setError("Insufficient database permissions.")
+                } else {
+                    setError("Unable to load data right now.")
+                }
                 return []
             }
         }
@@ -60,21 +44,49 @@ export default function Stats() {
             async function getGroups(){
                 //call fetchData to send query to firestore
                 const data3 = await fetchData("groups")
-                setGroups(data3)
+                setGroups(data3 || [])
             }
             getGroups()           
         }, [])
     useEffect(()=>{
         if (!Number.isFinite(targetRange)) return
         async function getSessions() {
-            const data2 = await fetchSessionData()
+            setIsLoading(true)
+            try {
+                const docRef = collection(db, "sessions")
+                const q = query(
+                    docRef,
+                    where("timestamp", ">=", targetRange)
+                )
+                const data = []
+                const querySnapshot = await getDocs(q)
+                querySnapshot.forEach((doc)=>{
+                    data.push({id: doc.id, ...doc.data()})
+                })
+                setError("")
+                setSessionData(data)
+            } catch (err) {
+                console.log("Error fetching data:", err)
+                if (err?.code === "permission-denied") {
+                    setError("Insufficient database permissions.")
+                } else {
+                    setError("Unable to load data right now.")
+                }
+                setSessionData([])
+            } finally {
+                setIsLoading(false)
+            }
                 //update useState to be mapped below
-                setSessionData(data2)
         }
         getSessions()
     }, [targetRange])
     return (
         <>
+            {error && (
+                <div class="error">
+                    <p>❌ {error}</p>
+                </div>
+            )}
             <h2>Check attendance data</h2>
             <div class="display-attendance">
                 <div class="select-timeframe">
@@ -100,6 +112,7 @@ export default function Stats() {
                     </select>
                 </div>
             </div>
+            {isLoading && (<p>Loading...</p>)}
             {sessionData.map(function(session) {
                 console.log(session)
                 return(
