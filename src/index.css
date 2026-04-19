@@ -78,6 +78,10 @@ main {
   flex: 1;
 }
 
+button {
+  color: black;
+}
+
 img {
   display: block;
   aspect-ratio: auto;
