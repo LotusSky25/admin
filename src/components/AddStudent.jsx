@@ -145,6 +145,11 @@ export default function AddStudent(props) {
         //engage loading state
         setIsLoading(true)
         //update in firestore 
+        if (year > 6 || year < 0) {
+            setError("Student is too young/old for the program!")
+            setIsLoading(false)
+            return
+        }
         try {    
             const docRef = doc(db, "students", student.id)
             await setDoc(docRef, {
