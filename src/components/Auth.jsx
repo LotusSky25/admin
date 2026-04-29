@@ -12,7 +12,7 @@ export default function Auth(props) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { signUp, login } = useAuth();
+  const { signUp, login, checkAdminClaim, globalUser} = useAuth();
 
   async function handleAuthentication() {
     if (!email || !password) {

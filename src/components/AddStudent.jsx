@@ -1,6 +1,6 @@
-import { useState, useEffect} from "react"
+import { useState, useEffect, useCallback} from "react"
 import {db } from "../../firebase"
-import { doc, setDoc, increment, getDocs, collection} from "firebase/firestore"
+import { addDoc, doc, setDoc, increment, getDocs, collection} from "firebase/firestore"
 import {httpsCallable, getFunctions} from 'firebase/functions'
 import { useAuth } from "../context/AuthContext"
 
@@ -16,6 +16,7 @@ export default function AddStudent(props) {
     const [year, setYear] = useState(0)
     const [Dob, setDob] = useState("")
     const [selectedStudent, setSelectedStudent] = useState([])
+    const [isRegistered, setIsRegistered] = useState(true)
     //states for conditional rendering
     const [showGroups, setShowGroups] = useState(true)
     const [showStudentData, setShowStudentData] = useState(false)
@@ -25,6 +26,8 @@ export default function AddStudent(props) {
     const [hasDecided, setHasDecided] = useState(false)
     const [isDeleted, setIsDeleted] = useState(false)
     const [listStudents, setListStudents] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [isUpdating, setIsUpdating] = useState(false)
     const [error, setError] = useState("")
 
     const group = calculateGroup()
@@ -45,23 +48,37 @@ export default function AddStudent(props) {
                 return data //this is an array of objects
             } catch (err) {
                 console.log(err)
+                return []
             }
         }
-        useEffect(()=>{
-            async function getData(){
-                //call fetchData to send query to firestore
-                const studentData = await fetchData("students")
-                const groupData = await fetchData("groups")
-                //update useState to be mapped below
-                setStudentData(studentData)
-                setGroups(groupData)
+        //function to get data from firestore 
+        //callback to make sure it only 
+        const getData = useCallback(async(student) => {
+            //call fetchData to send query to firestore
+            const studentData = await fetchData("students")
+            const groupData = await fetchData("groups")
+            //update useState to be mapped below
+            setStudentData(studentData)
+            setGroups(groupData)
+            //if a student parameter was passed to the function
+            if (student) {
+                //check if the student is still in studentData
+                const updated = studentData.find((s)=>s.id === student.id)
+                //if so, update the selectedStudent state (to update UI)
+                if (updated) {
+                    setSelectedStudent(updated)
+                }
             }
-            getData()
-            
         }, [])
+
+        useEffect(()=>{
+            getData()
+        }, [getData])
 
     // function to calculate group based on year HARDCODED
     function calculateGroup(){
+        const isInt = Number.isInteger(year) || (typeof year === "string" && /^\d+$/.test(year.trim()))
+        if (!isInt) {return year}
         if (year<=2) {
             return "Kowhai"
         } else if (year<=4){
@@ -78,59 +95,140 @@ export default function AddStudent(props) {
     }
     //function to add student document to database 
     async function addStudent() {
+        setIsLoading(true)
         setError("")
         //check is student is within program age range, return if too old
         if (year > 6 || year < 0) {
             setError("Student is too young/old for the program!")
+            setIsLoading(false)
             return
         }
         const unique = checkStudent(name)
         if (unique) {
             try {    
-                const docRef = doc(db, "students", name)
-                await setDoc(docRef, {
-                    name: name,
+                const newName = name.trim()
+                await addDoc(collection(db, "students"), {
+                    name: newName,
                     group: group,
                     grade: year,
                     Dob: Dob,
+                    registered: true,
+                    sessions_since_registered: 0,
+                    sessions_attended: 0,
                     code: globalData?.code || ""
-                }, {merge: true})
-                console.log(name)
-                //reset states
-                setIsSubmitted(true)
-                setName("")
-                setYear(0)
+                })
                 const docRef2 = doc(db, "groups", group)
                 await setDoc(docRef2, {
                     student_count: increment(1),
                     code: globalData?.code || ""
                 }, {merge: true})
-                console.log(name)
+                //reset states
+                setIsSubmitted(true)
+                setName("")
+                setYear(0)
+                //reload firestore data to reflect changes
+                await getData()
             } catch(err) {
                 console.log(err)
                 setError("Unable to add student right now.")
+            } finally {
+                setIsLoading(false)
             }
         }
         else {
             setError("Student already exists. Please ensure the new student's name is unique.")
+            setIsLoading(false)
+        }
+    }
+    //funcion to update student data in firestore 
+    async function updateStudentData(student) {
+        //engage loading state
+        setIsLoading(true)
+        //update in firestore 
+        try {    
+            const docRef = doc(db, "students", student.id)
+            await setDoc(docRef, {
+                name: name.trim(),
+                group: group,
+                grade: year,
+                Dob: Dob,
+                sessions_since_registered: student.sessions_since_registered,
+                sessions_attended: student.sessions_attended,
+                registered: isRegistered,
+                code: globalData?.code || ""
+            }, {merge: true})
+            //if the group changed (because the user changed the student's year)
+            //update the student count in the old and new group
+            if (student.group !== group) {
+                const previousGroupRef = doc(db, "groups", student.group)
+                const nextGroupRef = doc(db, "groups", group)
+                await setDoc(previousGroupRef, {
+                    student_count: increment(-1),
+                    code: globalData?.code || ""
+                }, {merge: true})
+                await setDoc(nextGroupRef, {
+                    student_count: increment(1),
+                    code: globalData?.code || ""
+                }, {merge: true})
+            }
+            //reload firestore data
+            await getData()
+            //change UI back to showing student data
+            setIsUpdating(false)
+            setShowStudentData(true)
+        //catch any errors
+        } catch (err) {
+            console.log(err)
+                setError("Unable to update student information right now.")
+        //always disengage loading state
+            } finally {
+            setIsLoading(false)
         }
     }
     //function to delete student document and all associated subcollections and documents 
     async function callDeleteStudent(student) { 
+        setIsLoading(true)
         try{
+            //trigger cloud function with student path
             const res = await deleteStudent({path: "students/" + student.id})
+            //update group student count
+            const docRef2 = doc(db, "groups", student.group)
+                await setDoc(docRef2, {
+                    student_count: increment(-1),
+                    code: globalData?.code || ""
+                }, {merge: true})
             console.log(res.data)
             if (res.data.ok) {
+                await getData(student)
                 setIsDeleted(true)
             }
-
         } catch (err){
             console.log(err)
+        } finally {
+            setIsLoading(false)
         }
         
     }
+    //function to manage use states for student data during updates
+    function handleStatus(reset, student) {
+        //if user is cancelling update action, reset states
+        if (reset) {
+            setName("")
+            setYear(0)
+            setDob("")
+            setIsRegistered(false)
+        }
+        //if user is starting update action, set states to selected student data
+        else {
+            setName(student.name)
+            setYear(student?.grade || student.group)
+            setDob(student?.Dob || "")
+            setIsRegistered(student.registered)
+        }
+    }
     return (
         <>
+            {isLoading &&(<p>Loading...</p>)}
             {!hasDecided&&( //render initial option menu
                 <>
                 <div class="choose-action">
@@ -195,19 +293,21 @@ export default function AddStudent(props) {
                         <div class="roll">
                         {studentData.map(function(student, option){
                         if (student.group == targetGroup){
-                            return( <button 
-                                //sexy interactive buttons
-                                class={"group-button-"+targetGroup}
-                                key={option}
-                                type="button"
-                                //when clicked, progress to student data and set selected student to current student
-                                onClick={()=>{
-                                    setSelectedStudent(student), 
-                                    setShowStudentData(true),
-                                    setListStudents(false)
-                                }}
-                                ><p>{student.name}</p></button>)
-                        }})}
+                                return( <button 
+                                    //sexy interactive buttons
+                                    class={"group-button-"+targetGroup}
+                                    key={option}
+                                    type="button"
+                                    //when clicked, progress to student data and set selected student to current student
+                                    onClick={()=>{
+                                        setSelectedStudent(student), 
+                                        setShowStudentData(true),
+                                        setListStudents(false)
+                                    }}
+                                    ><p>{student.name} {student.registered ? "":"❗"}</p></button>)
+                            }
+                        })}
+                        <h5>NOTE: an exclamation point ❗next to the student's name indicates they are not registered with the program.</h5>
                         </div>
                     </>
                     )}
@@ -218,15 +318,45 @@ export default function AddStudent(props) {
                             <h2>{selectedStudent.name}</h2>
                             </div>  
                                 <div class="student-data">
+                                    {selectedStudent.registered == false && (
+                                        <div class="warning">
+                                            <p>⚠️ This student is not registered. If you notice repeat attendance, please consider getting their parent to register them with GPC kids.</p>
+                                        </div>
+                                    )}
                                     <p><b>Name:</b> {selectedStudent.name}</p>
-                                    <p><b>Date of Birth:</b> {selectedStudent.grade}</p>
-                                    <p><b>Grade:</b> {selectedStudent.grade}</p>
+                                    <p><b>Date of Birth:</b> {selectedStudent.Dob}</p>
+                                    <p><b>Year:</b> {selectedStudent.grade}</p>
                                     <p><b>Group:</b> {selectedStudent.group}</p>
-                                    <button class="delete-student-button" onClick={()=>{callDeleteStudent(selectedStudent), setShowStudentData(false)}}><p>Delete Student</p></button>
+                                    <p><b>Attendance:</b> {Math.round((selectedStudent.sessions_attended/selectedStudent.sessions_since_registered)*100) || 0}%</p>
+                                    <div class="manage-students">
+                                    <button class="edit-button" onClick={()=>{setIsUpdating(true), handleStatus(false, selectedStudent), setShowStudentData(false)}}><p>Edit Student Data</p></button>
+                                        <button class="delete-student-button" onClick={()=>{callDeleteStudent(selectedStudent), setShowStudentData(false)}}><p>Delete Student</p></button>
+                                    </div>
                                 </div>
                             </>
                         )}
-                        {isDeleted&&(
+                        {isUpdating && (//render if specific student is being edited 
+                            <>
+                            <div class="student-data">
+                                <p>Student Name</p>
+                                <input value={name} onChange={(e)=>{setName(e.target.value)}} placeholder="Name"></input>
+                                <p>Student Date of Birth</p>
+                                <input value={Dob} onChange={(e)=>{setDob(e.target.value)}} placeholder="Date of Birth"></input>
+                                <p>Student Current School Year</p>
+                                <input value={year} onChange={(e)=>{setYear(e.target.value)}} placeholder="Year"></input>
+                                <div class="registration-status">
+                                <p>Student Registration Status: </p>
+                                <button class={isRegistered ? "registered-button-true":"registered-button-false"} onClick={()=>{setIsRegistered(!isRegistered)}}>{isRegistered ? "Registered":"Unregistered"}</button>
+                                </div>
+                                <p class="warning">⚠️ Only set student status to registered after their parents have returned the registration form.</p>
+                                <div class="manage-students">
+                                    <button class="update-button" onClick={()=>{updateStudentData(selectedStudent)}}><p>Update</p></button>
+                                    <button class="roll-button-Magnolias" onClick={()=>{setIsUpdating(false), setShowStudentData(true), handleStatus(true)}}><p>Cancel</p></button>
+                                </div>
+                            </div>
+                            </>
+                        )}
+                        {isDeleted&&(//render if delete was successful 
                             <>
                                 <div class="is-submitted">
                                     <button class="edit-return-button" onClick={()=>{

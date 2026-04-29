@@ -18,6 +18,7 @@ export function AuthProvider(props){
     const [ globalData, setGlobalData ] = useState(null)
     const [ isLoading, setIsLoading ] = useState(false)
     const [ session, setSession ] = useState('')
+    const [admin, setAdmin] = useState(false)
 
     //handle registration
     function signUp(email, password) {
@@ -32,6 +33,11 @@ export function AuthProvider(props){
         setGlobalData(null)
         setGlobalUser(null)
         return signOut(auth)
+    }
+
+    async function checkAdminClaim(user) {
+        const idres = await user.getIdTokenResult() 
+        setAdmin(idres.claims.admin === true)
     }
     //get Date 
     function getDate() {
@@ -50,7 +56,8 @@ export function AuthProvider(props){
         signUp,
         login,
         logout,
-        session
+        session,
+        admin
     }
 
     useEffect(()=>{
@@ -64,6 +71,8 @@ export function AuthProvider(props){
             if (!user) {
                 console.log('No active user')
                 return
+            } else {
+                checkAdminClaim(user)
             }
             //if there IS a user, try to find data in database and, if found, return data and update globalUser
             try {
@@ -71,8 +80,7 @@ export function AuthProvider(props){
                 //create reference to doc (your database exported in firebsae.js, name of doc, unique id)
                 const docRef = doc(db, 'users', user.uid)
                 //take snapshot of document to see if it contains data
-                const docSnap = await getDoc(docRef)
-                
+                const docSnap = await getDoc(docRef)  
                 //create empty object
                 let firebaseData = {}
                 //if document snap contains data, assign data to empty state
@@ -80,7 +88,6 @@ export function AuthProvider(props){
                     firebaseData = docSnap.data()
                 }
                 setGlobalData(firebaseData)
-
             } catch(err){
                 console.error('Firebase Error:', err.code, err.message)
                 console.error('Full error:', err)

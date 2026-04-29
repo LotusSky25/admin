@@ -126,7 +126,7 @@ export default function Stats() {
                             {session[targetGroup]?.map(function(student, idx){
                                 return(
                                     <tr key={idx}>
-                                        <td>{student.name}</td>
+                                        <td>{student.name} {student.registered== true ? "" :"❗"}</td>
                                     </tr>
                                 )
                             })}

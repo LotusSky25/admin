@@ -105,7 +105,7 @@ img {
   position: fixed;
   top: 0;
   left: 0;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   display: flex;
   flex-direction: column;
@@ -113,14 +113,17 @@ img {
   justify-content: center;
   z-index: 100;
   padding: 1rem;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 .modal-content {
   position: relative;
   z-index: 101;
   max-width: 600px;
-  width: 100%;
+  width: min(100%, 600px);
   margin: 0 auto;
   min-height: 400px;
+  max-height: calc(100dvh - 2rem);
   border: 1px solid black;
   background: white;
   padding: 1rem;
@@ -128,6 +131,8 @@ img {
   flex-direction: column;
   border-radius: 3%;
   gap: 1rem;
+  box-sizing: border-box;
+  overflow-y: none;
 }
 
 .addAdmin-content {
@@ -166,10 +171,17 @@ input {
   align-items: center;
 }
 
-.warning{
+.warning,
+.students-warning{
   background-color: #ffe6b4;
   border-radius: 10px;
   padding: 2%;
+}
+.students-warning {
+  width: 100%;
+  padding: 0;
+  padding-left: 2%;
+  padding-right: 2%;
 }
 .error {
   background-color: #ffb4b4;
@@ -251,11 +263,21 @@ input {
   border-radius: 10px;
   border-color: lightgrey;
 }
+.edit-button {
+  background-color: #15aee8;
+  border-radius: 10px;
+  border-color: #15aee8;
+}
+.edit-button:hover {
+  background-color: #1499ca;
+  border-radius: 10px;
+  border-color: #1499ca;
+  cursor: pointer;
+}
 
 .roll-button-Kowhai:hover,
 .roll-button-Magnolias:hover,
-.roll-button-Oaks:hover,
-.edit-button:hover {
+.roll-button-Oaks:hover {
   box-shadow: 5px;
   background-color: lightgray;
   border-radius: 10px;
@@ -298,22 +320,62 @@ input {
   width: 100%;
   max-width: 200px;
   background-color: #ffffff;
-  color:#700707;
+  color:#510404;
   background-color: #fc6262;
   border-radius: 10px;
+  border-color:#fc6262;
 }
 .delete-student-button:hover {
   background-color: #f83b3b;
+  border-color:#f83b3b;
   cursor: pointer;
 }
 
+.registered-button-false {
+  margin: 2%;
+  width: 100%;
+  max-width: 200px;
+  align-self:center;
+  max-height: 20px;
+  padding: 2px;
+  background-color: #ffffff;
+  color:#510404;
+  background-color: #fc6262;
+  border-radius: 10px;
+  border-style: none;
+}
+.registered-button-true {
+  margin: 2%;
+  width: 100%;
+  padding:2px;
+  align-self: center;
+  max-height: 20px;
+  max-width: 200px;
+  background-color: #ffffff;
+  color:#0a7007;
+  background-color: #83fc62;
+  border-radius: 10px;
+  border-style: none;
+}
+.registered-button-false:hover, 
+.registered-button-true:hover {
+  cursor: pointer;
+}
+
+.registration-status {
+  display: flex;
+  justify-content: left;
+  align-items: left;
+}
 .submit-roll-button,
 .login-button, 
 .manage-students-button,
 .add-student-button,
 .logout-button,
-.addAdmin-button {
-  margin: 2px;
+.addAdmin-button, 
+.update-button,
+.auth-buttons{
+  margin: 2%;
   width: 100%;
   max-width: 200px;
   background-color: #15aee8;
@@ -343,11 +405,21 @@ input {
 .manage-students-button:hover,
 .addAdmin-button:hover,
 .logout-button:hover,
-.add-student-button:hover {
+.add-student-button:hover,
+.update-button:hover,
+.auth-buttons:hover{
   box-shadow: 5px;
   background-color: #1499ca;
   border-radius: 10px;
   cursor: pointer;
+}
+.logout-button-text,
+.auth-buttons-text {
+  padding: none;
+  margin:none;
+}
+.auth-buttons {
+  max-width: 100%;
 }
 
 .roll-header {
@@ -424,6 +496,7 @@ table{
 
 .student-data{
   margin-left:10%;
+  margin-right:10%;
 }
 
 .manage-students {
