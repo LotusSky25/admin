@@ -277,6 +277,7 @@ export default function AddStudent(props) {
             )}
             {isEdit&&( //render if the user wants to edit existing student data
                 <>
+                    {error && (<div class="error"><p>❌ {error}</p></div>)}
                     {showGroups &&(
                         <div class="group-select">
                             <div class="manage-students-header">
