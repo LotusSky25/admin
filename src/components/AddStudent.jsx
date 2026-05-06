@@ -368,7 +368,11 @@ export default function AddStudent(props) {
                                     <button class="edit-return-button" onClick={()=>{
                                         setHasDecided(false), 
                                         setIsEdit(false), 
-                                        setIsDeleted(false)}}><i class="fa-solid fa-arrow-left"></i>Return</button>
+                                        setIsDeleted(false),
+                                        setShowGroups(true),
+                                        setListStudents(false),
+                                        setShowStudentData(false),
+                                        setSelectedStudent([])}}><i class="fa-solid fa-arrow-left"></i>Return</button>
                                     <p>✅ Student deleted successfully</p>
                                 </div>
                             </>
