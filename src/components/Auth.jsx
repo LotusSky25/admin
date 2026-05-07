@@ -11,10 +11,11 @@ export default function Auth(props) {
   const [code, setCode] = useState("")
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [formError, setFormError] = useState("");
-
+  //access global variables
   const { signUp, login, checkAdminClaim, globalUser} = useAuth();
 
   async function handleAuthentication() {
+    //check if form inputs correct
     if (!email || !password) {
       setFormError("Form incomplete. Please fill out all fields.");
       return;
@@ -32,7 +33,9 @@ export default function Auth(props) {
       return;
     }
     try {
+      //make system status visible 
       setIsAuthenticating(true);
+      //send auth request
       if (isRegistering) {
         const credential = await signUp(email, password);
         await checkCode(code, credential.user.uid);
@@ -49,27 +52,27 @@ export default function Auth(props) {
       setIsAuthenticating(false);
     }
   }
-
+    //helper function to check access code
     async function checkCode(ncode, userId) {
         const normalizedCode = ncode.trim();
         if (!normalizedCode) {
           setFormError("Please enter a church access code.");
           return;
         }
-
+        //query church docs to find if code exists
         const codeQuery = query(
           collection(db, "churches"),
           where("code", "==", normalizedCode),
         );
         const querySnapshot = await getDocs(codeQuery);
-
+        //if not, reject code
         if (querySnapshot.empty) {
           setFormError("Invalid code.");
           return;
         }
         await associateUser(normalizedCode, userId);
     }
-
+    //set user code to church code
     async function associateUser(code, userId) {
       const docRef = doc(db, "users", userId)
       await setDoc(docRef, {

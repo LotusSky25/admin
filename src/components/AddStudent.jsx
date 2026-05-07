@@ -33,7 +33,7 @@ export default function AddStudent(props) {
     const group = calculateGroup()
     const functions = getFunctions()
     const deleteStudent = httpsCallable(functions, 'deleteStudent')
-    const { globalData } = useAuth()
+    const { globalData, session} = useAuth()
     
     //function to fetch data
     async function fetchData(col) {
@@ -106,6 +106,7 @@ export default function AddStudent(props) {
         const unique = checkStudent(name)
         if (unique) {
             try {    
+                //trim name to remove whitespaces
                 const newName = name.trim()
                 await addDoc(collection(db, "students"), {
                     name: newName,
@@ -117,6 +118,7 @@ export default function AddStudent(props) {
                     sessions_attended: 0,
                     code: globalData?.code || ""
                 })
+                //update student count
                 const docRef2 = doc(db, "groups", group)
                 await setDoc(docRef2, {
                     student_count: increment(1),
@@ -150,6 +152,7 @@ export default function AddStudent(props) {
             setIsLoading(false)
             return
         }
+        //try to add student
         try {    
             const docRef = doc(db, "students", student.id)
             await setDoc(docRef, {

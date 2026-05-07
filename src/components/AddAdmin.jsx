@@ -5,8 +5,9 @@ import {onAuthStateChanged, getAuth} from 'firebase/auth'
 import { useState } from 'react'
 
 export default function AddAdmin(props) {
-    
+    //structure out close modal 
     const {handleCloseModal} = props;
+    //import cloud add admin function
     const functions = getFunctions()
     const addAdmin = httpsCallable(functions, 'addAdmin')
     const [email, setEmail] = useState("")
@@ -14,8 +15,9 @@ export default function AddAdmin(props) {
     const [error, setError] = useState("")
 
     async function callAddAdmin({ email }) {
+        setError("")
+        //initial validity check to prevent pointless involcations
         if(email == "" || !email.includes("@")) {
-            setError("")
             setError("Please enter a valid email address.")
             return
         }
@@ -46,7 +48,7 @@ export default function AddAdmin(props) {
     }
 
     return (
-    <>
+    <>{/*render any errors */}
         {error !="" && (
             <div class="error">
                 <p>❌{error}</p>
@@ -60,6 +62,7 @@ export default function AddAdmin(props) {
                 <button class="addAdmin-button" onClick={()=>{callAddAdmin({email})}}><p>Add</p></button>
             </div>
             <div class="warning">
+            {/*warn user of consequences */}
                 <p>⚠️ As an admin this person will be able to access the admin dashboard and view all student data and history, including that recorded prior to their becoming an admin. Only give admin privileges to trusted individuals.</p>
             </div>
             <h5><b>Please note:</b> Only existing users can be awarded admin privileges. Ensure the user has registered on the mobile app. </h5>

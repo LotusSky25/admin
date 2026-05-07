@@ -5,11 +5,13 @@ import Modal2 from "./Modal2"
 import Modal3 from "./Modal3"
 
 export default function Edits(){
+    //define modal states
     const [showModal1, setShowModal1] = useState(false)
     const [showModal2, setShowModal2] = useState(false)
 
     return (
         <>
+        {/*pass down ability to close modals to child components */}
             {showModal1 &&(<Modal2 handleCloseModal={()=>{setShowModal1(false)}}>
                 <AddStudent handleCloseModal={()=>{setShowModal1(false)}}/>
             </Modal2>)}
