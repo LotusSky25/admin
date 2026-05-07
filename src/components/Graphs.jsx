@@ -58,7 +58,7 @@ export default function Graphs(){
                     const attendance = (student.sessions_attended / student.sessions_since_registered) * 100 || 0
                     return (
                         <div class="students-warning" key={student.id}>
-                            <p>⚠️ <b>{student.name}</b>, {attendance}%</p>
+                            <p>⚠️ <b>{student.name}</b>, {Math.round(attendance)}%</p>
                         </div>
                     )
                 })}
