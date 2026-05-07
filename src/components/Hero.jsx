@@ -10,7 +10,7 @@ export default function Hero(props) {
                 <Auth handleCloseModal={() =>{setShowModal1(false)}}/>
             </Modal1>)}
 
-            <h1>Welcome to GPC Kids!</h1>
+            <h1>Welcome to GPC Kids Admin Dashboard!</h1>
             {!isAuthenticated &&(
                 <>
                     <p>Please login to view and manage classes</p>
