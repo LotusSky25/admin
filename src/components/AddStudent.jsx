@@ -150,6 +150,7 @@ export default function AddStudent(props) {
     }
     //funcion to update student data in firestore 
     async function updateStudentData(student) {
+        setError("")
         //engage loading state
         setIsLoading(true)
         //update in firestore 
@@ -227,6 +228,7 @@ export default function AddStudent(props) {
     function handleStatus(reset, student) {
         //if user is cancelling update action, reset states
         if (reset) {
+            setError("")
             setName("")
             setYear(0)
             setDob("")
