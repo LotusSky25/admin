@@ -103,6 +103,12 @@ export default function AddStudent(props) {
             setIsLoading(false)
             return
         }
+        const normalizedName = name.trim().toLowerCase()
+        if (normalizedName === "") {
+            setError("Please enter a valid name")
+            setIsLoading(false)
+            return
+        }
         const unique = checkStudent(name)
         if (unique) {
             try {    

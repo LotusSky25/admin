@@ -1,7 +1,7 @@
 import { useAuth } from "../context/AuthContext"
-
+//display code for admin reference 
 export default function Church(){
-
+    //get global data from auth hook
     const {globalData} = useAuth()
     const code = getCode()
     
